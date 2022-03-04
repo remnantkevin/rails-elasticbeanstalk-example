@@ -1,2 +1,5 @@
-nodejs 16.14.0
+# This is the same version as is used by the EB ruby platform.
+nodejs 16.14.0 
+
+# This is the same version as is used by the EB ruby platform.
 ruby 2.7.5

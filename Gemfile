@@ -1,10 +1,10 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.5'
+ruby '2.7.5' # This is the same version as is used by the EB ruby platform.
 
-gem 'rails', '6.1.4.6'
-gem 'puma', '5.6.2' # Use Puma as the app server
+gem 'rails', '6.1.4.6' # Use latest Rails 6.1.x version.
+gem 'puma', '5.6.2' # Use Puma as the app server. This is the same version as is used by the EB ruby platform.
 
 # Use sqlite3 as the database for Active Record
 gem 'sqlite3', '~> 1.4'
