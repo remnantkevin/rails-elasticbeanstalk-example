@@ -5,9 +5,8 @@ ruby '2.7.5' # This is the same version as is used by the EB ruby platform.
 
 gem 'rails', '6.1.4.6' # Use latest Rails 6.1.x version.
 gem 'puma', '5.6.2' # Use Puma as the app server. This is the same version as is used by the EB ruby platform.
+gem 'pg', '~> 1.1' # Use postgresql as the database for Active Record.
 
-# Use sqlite3 as the database for Active Record
-gem 'sqlite3', '~> 1.4'
 # Use SCSS for stylesheets
 gem 'sass-rails', '>= 6'
 # Transpile app-like JavaScript. Read more: https://github.com/rails/webpacker
