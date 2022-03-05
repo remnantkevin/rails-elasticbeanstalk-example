@@ -1,10 +1,9 @@
 source 'https://rubygems.org'
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby '2.7.5' # This is the same version as is used by the EB ruby platform.
+ruby '2.7.5'
 
 gem 'rails', '6.1.4.6' # Use latest Rails 6.1.x version.
-gem 'puma', '5.6.2' # Use Puma as the app server. This is the same version as is used by the EB ruby platform.
 gem 'pg', '~> 1.1' # Use postgresql as the database for Active Record.
 
 # Use SCSS for stylesheets
@@ -27,6 +26,9 @@ gem 'jbuilder', '~> 2.7'
 gem 'bootsnap', '>= 1.4.4', require: false
 
 group :development, :test do
+  # Not needed in production because it is provided by the Ruby AL2 platform. Use the same version as the platform provides.
+  gem 'puma', '5.6.2' # Use Puma as the app server.
+
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
 end
