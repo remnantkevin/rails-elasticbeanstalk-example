@@ -3,7 +3,7 @@
 echo "------- START: 00_upgrade_to_postgresql13.sh -------"
 
 echo "Running command amazon-linux-extras enable postgresql13"
-amazon-linux-extras enable postgresql13
+amazon-linux-extras enable postgresql13 > /dev/null 2>&1
 
 echo "Running command yum clean metadata"
 yum clean metadata
