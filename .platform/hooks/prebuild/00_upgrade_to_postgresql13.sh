@@ -8,8 +8,8 @@ amazon-linux-extras enable postgresql13 > /dev/null 2>&1
 echo "Running command yum clean metadata"
 yum clean metadata
 
-echo "Running command yum install postgresql"
-yum install postgresql
+echo "Running command yum install postgresql --assumeyes"
+yum install postgresql --assumeyes
 
 echo "Running command yum list installed postgresql"
 yum list installed postgresql
