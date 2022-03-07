@@ -26,6 +26,8 @@ gem 'jbuilder', '~> 2.7'
 gem 'bootsnap', '>= 1.4.4', require: false
 
 group :development, :test do
+  gem 'dotenv', '2.7.6'
+
   # Not needed in production because it is provided by the Ruby AL2 platform. Use the same version as the platform provides.
   gem 'puma', '5.6.2' # Use Puma as the app server.
 
