@@ -12,11 +12,16 @@ class ArticlesController < ApplicationController
   end
 
   def create
+    logger.info("Creating article...")
+
     @article = Article.new(article_params)
 
     if @article.save
+      logger.info("Article saved")
+      MyTestJob.perform_later(@article)
       redirect_to @article
     else
+      logger.info("Article failed validation")
       render :new
     end
   end

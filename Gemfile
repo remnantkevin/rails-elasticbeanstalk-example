@@ -22,10 +22,14 @@ gem 'jbuilder', '~> 2.7'
 # Use Active Storage variant
 # gem 'image_processing', '~> 1.2'
 
+# ActiveJob backend.
+gem 'good_job', '~> 2.11', '>= 2.11.2'
+
 # Reduces boot times through caching; required in config/boot.rb
 gem 'bootsnap', '>= 1.4.4', require: false
 
 group :development, :test do
+  # Load environment variables from a .env file.
   gem 'dotenv', '2.7.6'
 
   # Not needed in production because it is provided by the Ruby AL2 platform. Use the same version as the platform provides.
