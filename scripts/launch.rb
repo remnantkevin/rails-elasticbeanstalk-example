@@ -44,11 +44,8 @@ module Commands
       ]
       puts appversion_args
 
-      Open3.popen3("eb appversion #{appversion_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
+      output, error, status = Open3.capture3("eb appversion #{appversion_args.join(' ')}")
+      puts output
 
       create_configuration_template_args = [
         "--application-name #{web_application_name}",
@@ -58,12 +55,9 @@ module Commands
       ]
       puts create_configuration_template_args
 
-      Open3.popen3("aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
-      
+      output, error, status = Open3.capture3("aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}")
+      puts output
+
       option_overrides = [
         { Namespace: "aws:rds:dbinstance", OptionName: "DBUser", Value: get_parameter_value("/#{environment}/web/DBUser") },
         { Namespace: "aws:rds:dbinstance", OptionName: "DBPassword", Value: get_parameter_value("/#{environment}/web/DBPassword") },
@@ -81,16 +75,32 @@ module Commands
       puts create_environment_args
       puts "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
 
-      Open3.popen3("aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
-
+      output, error, status = Open3.capture3("aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}")
+      puts output
 
       ##########################
       # Worker
       ##########################
+
+      # Check that the web app is ready before deploying the worker.
+
+      output, error, status = Open3.capture3("aws elasticbeanstalk describe-environment-health --environment-name #{web_environment_name} --attribute-names Status --output json")
+      puts output
+      status = JSON.parse(output)["Status"]
+      puts status
+
+      while status != "Ready" do
+        puts "Sleeping for 1 minute..."
+        sleep(60)
+
+        puts "Checking..."
+        output, error, status = Open3.capture3("aws elasticbeanstalk describe-environment-health --environment-name #{web_environment_name} --attribute-names Status --output json")
+        puts output
+        status = JSON.parse(output)["Status"]
+        puts status
+      end
+
+      # Web app is ready, deploy worker.
 
       worker_application_name = "#{application}-worker"
       worker_environment_name = "#{worker_application_name}-#{environment}"
@@ -104,11 +114,7 @@ module Commands
       ]
       puts worker_appversion_args
 
-      Open3.popen3("eb appversion #{worker_appversion_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
+      output, error, status = Open3.capture3("eb appversion #{worker_appversion_args.join(' ')}")
 
       worker_create_configuration_template_args = [
         "--application-name #{worker_application_name}",
@@ -119,11 +125,7 @@ module Commands
       puts worker_create_configuration_template_args
       puts "aws elasticbeanstalk create-configuration-template #{worker_create_configuration_template_args.join(' ')}"
 
-      Open3.popen3("aws elasticbeanstalk create-configuration-template #{worker_create_configuration_template_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
+      output, error, status = Open3.capture3("aws elasticbeanstalk create-configuration-template #{worker_create_configuration_template_args.join(' ')}")
 
       rds = get_rds_instance_data(web_environment_name)
       puts rds
@@ -152,12 +154,7 @@ module Commands
       puts worker_create_environment_args
       puts "aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}"
 
-      Open3.popen3("aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}") do |stdout, stderr, status, thread|
-        while line=stderr.gets do 
-          puts(line) 
-        end
-      end
-            
+      output, error, status = Open3.capture3("aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}")     
     end
 
     def get_parameter_value(name)
