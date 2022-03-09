@@ -1,0 +1,16 @@
+branch-defaults:
+  main:
+    environment: blog-web-production
+    group_suffix: null
+  staging:
+    environment: blog-web-staging
+global:
+  application_name: blog-web
+  branch: main
+  default_ec2_keyname: aws-eb
+  default_platform: Ruby 2.7 running on 64bit Amazon Linux 2
+  default_region: ap-southeast-2
+  profile: eb-cli
+  repository: null
+  sc: git
+  workspace_type: Application
