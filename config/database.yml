@@ -12,6 +12,14 @@ test:
   <<: *default
   database: rails_eb_tutorial_project_test
 
+staging:
+  <<: *default
+  database: <%= ENV['RDS_DB_NAME'] %>
+  host: <%= ENV['RDS_HOSTNAME'] %>
+  port: <%= ENV['RDS_PORT'] %>
+  username: <%= ENV['RDS_USERNAME'] %>
+  password: <%= ENV['RDS_PASSWORD'] %>
+
 production:
   <<: *default
   database: <%= ENV['RDS_DB_NAME'] %>
