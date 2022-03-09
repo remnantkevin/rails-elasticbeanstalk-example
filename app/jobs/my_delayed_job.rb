@@ -5,7 +5,7 @@ class MyDelayedJob < ApplicationJob
     logger.info("Performing MyDelayedJob...")
 
     article.title = "This title was changed from #{article.title} by MyDelayedJob"
-    article_latest.save!
+    article.save!
 
     logger.info("MyDelayedJob completed.")
   end

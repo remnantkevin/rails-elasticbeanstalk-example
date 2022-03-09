@@ -5,7 +5,7 @@ class MyTestJob < ApplicationJob
     logger.info("Performing MyTestJob...")
 
     article.title = "This title was changed from #{article.title} by MyTestJob"
-    article_latest.save!
+    article.save!
 
     logger.info("MyTestJob completed.")
   end
