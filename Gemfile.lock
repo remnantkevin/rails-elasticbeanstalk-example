@@ -80,6 +80,7 @@ GEM
     concurrent-ruby (1.1.9)
     crass (1.0.6)
     dotenv (2.7.6)
+    dry-cli (0.7.0)
     erubi (1.10.0)
     et-orbi (1.2.6)
       tzinfo
@@ -228,6 +229,7 @@ DEPENDENCIES
   byebug
   capybara (>= 3.26)
   dotenv (= 2.7.6)
+  dry-cli (~> 0.7.0)
   good_job (~> 2.11, >= 2.11.2)
   jbuilder (~> 2.7)
   listen (~> 3.3)
