@@ -10,7 +10,7 @@ echo $IS_WORKER
 if [ $IS_WORKER ]; then
   mv Procfile.worker Procfile
 else
-  mv Procfile.web Profile
+  mv Procfile.web Procfile
 fi
 
 echo "------- END: 02_use_procfile.sh -------"
