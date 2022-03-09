@@ -1,0 +1,127 @@
+[
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MinSize",
+    "Value": "1"
+  },
+  {
+    "Namespace": "aws:autoscaling:asg",
+    "OptionName": "MaxSize",
+    "Value": "3"
+  },
+  {
+    "Namespace": "aws:autoscaling:launchconfiguration",
+    "OptionName": "IamInstanceProfile",
+    "Value": "aws-elasticbeanstalk-ec2-role"
+  },
+  {
+    "Namespace": "aws:autoscaling:launchconfiguration",
+    "OptionName": "EC2KeyName",
+    "Value": "aws-eb"
+  },
+  {
+    "Namespace": "aws:ec2:instances",
+    "OptionName": "InstanceTypes",
+    "Value": "t3a.micro"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+    "OptionName": "RetentionInDays",
+    "Value": "1"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+    "OptionName": "DeleteOnTerminate",
+    "Value": "true"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:cloudwatch:logs",
+    "OptionName": "StreamLogs",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "ServiceRole",
+    "Value": "aws-elasticbeanstalk-service-role"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:environment",
+    "OptionName": "EnvironmentType",
+    "Value": "LoadBalanced"
+  },
+  {
+    "Namespace": "aws:rds:dbinstance",
+    "OptionName": "DBEngineVersion",
+    "Value": "13.3"
+  },
+  {
+    "Namespace": "aws:rds:dbinstance",
+    "OptionName": "DBInstanceClass",
+    "Value": "db.t4g.micro"
+  },
+  {
+    "Namespace": "aws:rds:dbinstance",
+    "OptionName": "HasCoupledDatabase",
+    "Value": "true"
+  },
+  {
+    "Namespace": "aws:rds:dbinstance",
+    "OptionName": "DBEngine",
+    "Value": "postgres"
+  },
+  {
+    "Namespace": "aws:rds:dbinstance",
+    "OptionName": "DBDeletionPolicy",
+    "Value": "Snapshot"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RAILS_SKIP_MIGRATIONS",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RAILS_SKIP_ASSET_COMPILATION",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "BUNDLE_WITHOUT",
+    "Value": "test:development"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "BUNDLER_DEPLOYMENT_MODE",
+    "Value": "true"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RACK_ENV",
+    "Value": "provide via command line argument"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "RAILS_MASTER_KEY",
+    "Value": "provide via command line argument"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:application:environment",
+    "OptionName": "IS_WORKER",
+    "Value": "false"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:managedactions",
+    "OptionName": "ManagedActionsEnabled",
+    "Value": "true"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:managedactions",
+    "OptionName": "PreferredStartTime",
+    "Value": "Fri:06:00"
+  },
+  {
+    "Namespace": "aws:elasticbeanstalk:managedactions:platformupdate",
+    "OptionName": "UpdateLevel",
+    "Value": "minor"
+  }
+]
