@@ -2,16 +2,11 @@ class MyTestJob < ApplicationJob
   queue_as :default
 
   def perform(article)
-    logger.info("Performing job...")
-    logger.info("JOB ID: #{article.id}")
+    logger.info("Performing MyTestJob...")
 
-    puts "puts logger:"
-    puts logger
-    
-    article_latest = Article.find(article.id)
-    article_latest.title = "Change from job"
+    article.title = "This title was changed from #{article.title} by MyTestJob"
     article_latest.save!
 
-    logger.info("Job completed")
+    logger.info("MyTestJob completed.")
   end
 end

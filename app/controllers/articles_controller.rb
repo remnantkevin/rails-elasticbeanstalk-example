@@ -19,6 +19,7 @@ class ArticlesController < ApplicationController
     if @article.save
       logger.info("Article saved")
       MyTestJob.perform_later(@article)
+      MyDelayedJob.set(wait: 5.minutes).perform_later(@article)
       redirect_to @article
     else
       logger.info("Article failed validation")
