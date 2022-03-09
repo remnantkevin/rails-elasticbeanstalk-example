@@ -40,4 +40,8 @@
 yarn-debug.log*
 .yarn-integrity
 
+# Environment variables for local development.
 .env
+
+# Ignore eb cli config file that can change often during local development.
+.elasticbeanstalk/config.yml
