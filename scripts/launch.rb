@@ -28,6 +28,10 @@ module Commands
     def call(application:, environment:, **)
       current_directory = Dir.pwd
 
+      ##########################
+      # Web
+      ##########################
+
       web_application_name = "#{application}-web"
       web_environment_name = "#{web_application_name}-#{environment}"
       web_application_unique_appversion_name = "#{web_application_name}_appversion_#{SecureRandom.uuid}"
@@ -83,11 +87,11 @@ module Commands
         end
       end
 
-      # application = "sales"
-      # environment = "production"
-      # web_application_name = "sales-web"
-      # web_environment_name = "sales-web-production"
+
+      ##########################
       # Worker
+      ##########################
+
       worker_application_name = "#{application}-worker"
       worker_environment_name = "#{worker_application_name}-#{environment}"
       worker_application_unique_appversion_name = "#{worker_application_name}_appversion_#{SecureRandom.uuid}"
