@@ -62,6 +62,7 @@ A different `Procfile` is needed in the web application than in the worker appli
 
 ## TODO
 
+- handle errors from commands run in launch script (currently the script will just continue to the next step, which will likely fail if previous steps had errors)
 - more details on set up
 - more detailed explanantion of architecture and reasons why things were done the way they were
 - limitations of EB
