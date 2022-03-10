@@ -48,7 +48,7 @@ module Commands
       create_eb_application_and_version(web_application_name, web_application_unique_appversion_name, profile)
 
       create_eb_configuration_template(web_application_name, web_application_unique_template_name, current_directory,
-                                       profile)
+                                       profile, 'web')
 
       web_option_overrides = [
         {
@@ -90,18 +90,18 @@ module Commands
       create_eb_application_and_version(worker_application_name, worker_application_unique_appversion_name, profile)
 
       create_eb_configuration_template(worker_application_name, worker_application_unique_template_name,
-                                       current_directory, profile)
+                                       current_directory, profile, 'worker')
 
-      rds = get_rds_instance_data_for_environment(web_environment_name, profile)
-      sg = get_launch_config_security_group(web_environment_name, web_application_name, profile)
-      puts rds
-      puts sg
+      rds_hostname = get_rds_instance_hostname(web_environment_name, profile)
+      security_group_name = get_launch_config_security_group(web_environment_name, web_application_name, profile)
+      puts rds_hostname
+      puts security_group_name
 
       worker_option_overrides = [
         {
           Namespace: 'aws:autoscaling:launchconfiguration',
           OptionName: 'SecurityGroups',
-          Value: sg
+          Value: security_group_name # allows a worker EC2 instance to be able to connect to the web RDS instance
         },
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
@@ -116,12 +116,12 @@ module Commands
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
           OptionName: 'RDS_DB_NAME',
-          Value: rds[:db_name]
+          Value: 'ebdb'
         },
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
           OptionName: 'RDS_HOSTNAME',
-          Value: rds[:host_name]
+          Value: rds_hostname
         },
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
@@ -162,12 +162,12 @@ module Commands
       puts output
     end
 
-    def create_eb_configuration_template(application_name, unique_template_name, current_directory, profile)
+    def create_eb_configuration_template(application_name, unique_template_name, current_directory, profile, type)
       create_configuration_template_args = [
         "--application-name #{application_name}",
         "--template-name #{unique_template_name}",
         "--platform-arn \"#{PLATFORM_ARN}\"",
-        "--option-settings \"file://#{current_directory}/.ebextensions/web.config.json\"",
+        "--option-settings \"file://#{current_directory}/.ebextensions/#{type}.config.json\"",
         "--profile #{profile}"
       ]
       puts create_configuration_template_args
@@ -234,16 +234,15 @@ module Commands
       JSON.parse(parameter_value)
     end
 
-    def get_rds_instance_data_for_environment(environment_name, profile)
-      output, _error, _status = Open3.capture3("aws rds describe-db-instances --profile #{profile} --output json --query \"DBInstances[].{DBName: DBName, HostName: Endpoint.Address, TagList: TagList[?Key=='elasticbeanstalk:environment-name']}\"")
+    def get_rds_instance_hostname(environment_name, profile)
+      environment_id, _error, _status = Open3.capture3("aws elasticbeanstalk describe-environments --environment-name #{environment_name}  --profile #{profile} --query \"Environments[0].EnvironmentId\" --output text")
+      environment_id = environment_id.strip
 
-      instance_data = JSON.parse(output).find do |rds_instance|
-        rds_instance['TagList'].any? do |tag|
-          tag['Key'] == 'elasticbeanstalk:environment-name' && tag['Value'] == environment_name
-        end
-      end
+      cloudformation_stack_outputs, _error, _status = Open3.capture3("aws cloudformation describe-stacks --output json --profile #{profile} --query \"Stacks[?contains(StackName, '#{environment_id}')].Outputs[]\"")
 
-      { db_name: instance_data['DBName'], host_name: instance_data['HostName'] }
+      JSON.parse(cloudformation_stack_outputs).find do |x|
+        x['OutputKey'] == 'AWSEBRDSDatabaseProperties'
+      end.fetch('OutputValue').split(',')[1]
     end
 
     def get_launch_config_security_group(environment_name, application_name, profile)
@@ -258,9 +257,7 @@ module Commands
       raw_security_group_data, _error, _status = Open3.capture3(
         "aws elasticbeanstalk describe-configuration-settings #{describe_configuration_settings_args.join(' ')}"
       )
-      puts raw_security_group_data
-
-      raw_security_group_data
+      raw_security_group_data.strip
     end
   end
 
