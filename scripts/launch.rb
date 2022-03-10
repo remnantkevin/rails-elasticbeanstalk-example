@@ -1,29 +1,32 @@
-#!/usr/bin/env ruby
+# frozen_string_literal: true
 
-require "bundler/setup"
-require "dry/cli"
-require "json"
-require "securerandom"
+# !/usr/bin/env ruby
+
+require 'bundler/setup'
+require 'dry/cli'
+require 'json'
+require 'securerandom'
 require 'open3'
 
-PLATFORM_ARN = "arn:aws:elasticbeanstalk:ap-southeast-2::platform/Ruby 2.7 running on 64bit Amazon Linux 2/3.4.3"
+PLATFORM_ARN = 'arn:aws:elasticbeanstalk:ap-southeast-2::platform/Ruby 2.7 running on 64bit Amazon Linux 2/3.4.3'
 
 module Commands
   extend Dry::CLI::Registry
 
   class Version < Dry::CLI::Command
-    desc "Print version"
+    desc 'Print version'
 
     def call(*)
-      puts "1.0.0"
+      puts '1.0.0'
     end
   end
 
   class Create < Dry::CLI::Command
-    desc "Create a new web application, worker application, and environments for each, on EB."
+    desc 'Create a new web application, worker application, and environments for each, on EB.'
 
-    option :application, type: :string, required: true, desc: "Name of the EB application"
-    option :environment, type: :string, required: true, values: [:production, :staging], desc: "Type of environment to create"
+    option :application, type: :string, required: true, desc: 'Name of the EB application'
+    option :environment, type: :string, required: true, values: %i[production staging],
+                         desc: 'Type of environment to create'
 
     def call(application:, environment:, **)
       current_directory = Dir.pwd
@@ -36,116 +39,108 @@ module Commands
       web_environment_name = "#{web_application_name}-#{environment}"
       web_application_unique_appversion_name = "#{web_application_name}_appversion_#{SecureRandom.uuid}"
       web_application_unique_template_name = "#{web_application_name}_template_#{SecureRandom.uuid}"
-      
-      appversion_args = [
-        "--create",
-        "--application #{web_application_name}",
-        "--label #{web_application_unique_appversion_name}"
+
+      create_eb_application_and_version(web_application_name, web_application_unique_appversion_name)
+
+      create_eb_configuration_template(web_application_name, web_application_unique_template_name, current_directory)
+
+      web_option_overrides = [
+        {
+          Namespace: 'aws:rds:dbinstance',
+          OptionName: 'DBUser',
+          Value: get_parameter_value("/#{environment}/web/DBUser")
+        },
+        {
+          Namespace: 'aws:rds:dbinstance',
+          OptionName: 'DBPassword',
+          Value: get_parameter_value("/#{environment}/web/DBPassword")
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RACK_ENV',
+          Value: environment
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RAILS_MASTER_KEY',
+          Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY")
+        }
       ]
-      puts appversion_args
 
-      output, error, status = Open3.capture3("eb appversion #{appversion_args.join(' ')}")
-      puts output
-
-      create_configuration_template_args = [
-        "--application-name #{web_application_name}",
-        "--template-name #{web_application_unique_template_name}",
-        "--platform-arn \"#{PLATFORM_ARN}\"",
-        "--option-settings \"file://#{current_directory}/.ebextensions/web.config.json\""
-      ]
-      puts create_configuration_template_args
-
-      output, error, status = Open3.capture3("aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}")
-      puts output
-
-      option_overrides = [
-        { Namespace: "aws:rds:dbinstance", OptionName: "DBUser", Value: get_parameter_value("/#{environment}/web/DBUser") },
-        { Namespace: "aws:rds:dbinstance", OptionName: "DBPassword", Value: get_parameter_value("/#{environment}/web/DBPassword") },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RACK_ENV", Value: environment },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RAILS_MASTER_KEY", Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY") },
-      ]
-
-      create_environment_args = [
-        "--environment-name #{web_environment_name}",
-        "--application-name #{web_application_name}",
-        "--template-name #{web_application_unique_template_name}",
-        "--version-label #{web_application_unique_appversion_name}",
-        "--option-settings '#{option_overrides.to_json}'"
-      ]
-      puts create_environment_args
-      puts "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
-
-      output, error, status = Open3.capture3("aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}")
-      puts output
+      create_eb_environment(web_application_name, web_environment_name, web_application_unique_appversion_name,
+                            web_application_unique_template_name, web_option_overrides)
 
       ##########################
       # Worker
       ##########################
 
-      # Check that the web app is ready before deploying the worker.
-
-      output, error, status = Open3.capture3("aws elasticbeanstalk describe-environment-health --environment-name #{web_environment_name} --attribute-names Status --output json")
-      puts output
-      status = JSON.parse(output)["Status"]
-      puts status
-
-      while status != "Ready" do
-        puts "Sleeping for 1 minute..."
-        sleep(60)
-
-        puts "Checking..."
-        output, error, status = Open3.capture3("aws elasticbeanstalk describe-environment-health --environment-name #{web_environment_name} --attribute-names Status --output json")
-        puts output
-        status = JSON.parse(output)["Status"]
-        puts status
-      end
-
-      # Web app is ready, deploy worker.
+      wait_for_environment_to_be_ready(web_environment_name)
 
       worker_application_name = "#{application}-worker"
       worker_environment_name = "#{worker_application_name}-#{environment}"
       worker_application_unique_appversion_name = "#{worker_application_name}_appversion_#{SecureRandom.uuid}"
       worker_application_unique_template_name = "#{worker_application_name}_template_#{SecureRandom.uuid}"
 
-      worker_appversion_args = [
-        "--create",
-        "--application #{worker_application_name}",
-        "--label #{worker_application_unique_appversion_name}"
-      ]
-      puts worker_appversion_args
+      create_eb_application_and_version(worker_application_name,
+                                        worker_application_unique_appversion_name)
 
-      output, error, status = Open3.capture3("eb appversion #{worker_appversion_args.join(' ')}")
+      create_eb_configuration_template(worker_application_name,
+                                       worker_application_unique_template_name,
+                                       current_directory)
 
-      worker_create_configuration_template_args = [
-        "--application-name #{worker_application_name}",
-        "--template-name #{worker_application_unique_template_name}",
-        "--platform-arn \"#{PLATFORM_ARN}\"",
-        "--option-settings \"file://#{current_directory}/.ebextensions/worker.config.json\""
-      ]
-      puts worker_create_configuration_template_args
-      puts "aws elasticbeanstalk create-configuration-template #{worker_create_configuration_template_args.join(' ')}"
-
-      output, error, status = Open3.capture3("aws elasticbeanstalk create-configuration-template #{worker_create_configuration_template_args.join(' ')}")
-
-      rds = get_rds_instance_data(web_environment_name)
+      rds = get_rds_instance_data_for_environment(web_environment_name)
+      sg = get_launch_config_security_group(web_environment_name, web_application_name)
       puts rds
-      sg = get_web_launch_security_group(web_environment_name, web_application_name)
       puts sg
+
       option_overrides = [
-        { Namespace: "aws:autoscaling:launchconfiguration", OptionName: "SecurityGroups", Value: sg },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RACK_ENV", Value: environment },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RAILS_MASTER_KEY", Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY") },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RDS_DB_NAME", Value: rds[:db_name] },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RDS_HOSTNAME", Value: rds[:host_name] },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RDS_PORT", Value: "5432" },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RDS_USERNAME", Value: get_parameter_value("/#{environment}/web/DBUser") },
-        { Namespace: "aws:elasticbeanstalk:application:environment", OptionName: "RDS_PASSWORD", Value: get_parameter_value("/#{environment}/web/DBPassword") },
+        {
+          Namespace: 'aws:autoscaling:launchconfiguration',
+          OptionName: 'SecurityGroups',
+          Value: sg
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RACK_ENV',
+          Value: environment
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RAILS_MASTER_KEY',
+          Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY")
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RDS_DB_NAME',
+          Value: rds[:db_name]
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RDS_HOSTNAME',
+          Value: rds[:host_name]
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RDS_PORT',
+          Value: '5432'
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RDS_USERNAME',
+          Value: get_parameter_value("/#{environment}/web/DBUser")
+        },
+        {
+          Namespace: 'aws:elasticbeanstalk:application:environment',
+          OptionName: 'RDS_PASSWORD',
+          Value: get_parameter_value("/#{environment}/web/DBPassword")
+        }
 
       ]
       puts option_overrides
 
       worker_create_environment_args = [
         "--environment-name #{worker_environment_name}",
+
         "--application-name #{worker_application_name}",
         "--template-name #{worker_application_unique_template_name}",
         "--version-label #{worker_application_unique_appversion_name}",
@@ -154,30 +149,104 @@ module Commands
       puts worker_create_environment_args
       puts "aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}"
 
-      output, error, status = Open3.capture3("aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}")     
+      output, _error, _status = Open3.capture3("aws elasticbeanstalk create-environment #{worker_create_environment_args.join(' ')}")
+      puts output
+    end
+
+    def create_eb_application_and_version(application_name, unique_appversion_name)
+      appversion_args = [
+        '--create',
+        "--application #{application_name}",
+        "--label #{unique_appversion_name}"
+      ]
+      puts appversion_args
+
+      output, _error, _status = Open3.capture3("eb appversion #{appversion_args.join(' ')}")
+      puts output
+    end
+
+    def create_eb_configuration_template(application_name, unique_template_name, current_directory)
+      create_configuration_template_args = [
+        "--application-name #{application_name}",
+        "--template-name #{unique_template_name}",
+        "--platform-arn \"#{PLATFORM_ARN}\"",
+        "--option-settings \"file://#{current_directory}/.ebextensions/web.config.json\""
+      ]
+      puts create_configuration_template_args
+
+      output, _error, _status = Open3.capture3(
+        "aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}"
+      )
+      puts output
+    end
+
+    def create_eb_environment(application_name, environment_name, unique_appversion_name, unique_template_name, option_overrides)
+      create_environment_args = [
+        "--environment-name #{environment_name}",
+        "--application-name #{application_name}",
+        "--template-name #{unique_template_name}",
+        "--version-label #{unique_appversion_name}",
+        "--option-settings '#{option_overrides.to_json}'"
+      ]
+      puts create_environment_args
+      puts "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
+
+      output, _error, _status = Open3.capture3("aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}")
+      puts output
+    end
+
+    def wait_for_environment_to_be_ready(environment_name)
+      environment_status = get_environment_status(environment_name)
+
+      while environment_status != 'Ready'
+        puts 'Sleeping for 1 minute...'
+        sleep(60)
+
+        environment_status = get_environment_status(environment_name)
+      end
+    end
+
+    def get_environment_status(environment_name)
+      puts 'Checking status...'
+      output, _error, _status = Open3.capture3("aws elasticbeanstalk describe-environment-health --environment-name #{environment_name} --attribute-names Status --output json")
+      puts output
+      status = JSON.parse(output)['Status']
+      puts status
+      status
     end
 
     def get_parameter_value(name)
-      parameter_value, error, status = Open3.capture3("aws ssm get-parameter --name \"#{name}\" --query \"Parameter.Value\" --output json")
+      parameter_value, _error, _status = Open3.capture3("aws ssm get-parameter --name \"#{name}\" --query \"Parameter.Value\" --output json")
       JSON.parse(parameter_value)
     end
 
-    def get_rds_instance_data(web_environment_name)
-      raw_instance_data, error, status = Open3.capture3("aws rds describe-db-instances --output json --query \"DBInstances[].{DBName: DBName, HostName: Endpoint.Address, TagList: TagList[?Key=='elasticbeanstalk:environment-name']}\"")
-      instance_data = JSON.parse(raw_instance_data).filter do |instance|
-        instance["TagList"].any? { |tag| tag["Key"] ==  "elasticbeanstalk:environment-name" && tag["Value"] == web_environment_name }
+    def get_rds_instance_data_for_environment(environment_name)
+      output, _error, _status = Open3.capture3("aws rds describe-db-instances --output json --query \"DBInstances[].{DBName: DBName, HostName: Endpoint.Address, TagList: TagList[?Key=='elasticbeanstalk:environment-name']}\"")
+      instance_data = JSON.parse(output).filter do |instance|
+        instance['TagList'].any? do |tag|
+          tag['Key'] == 'elasticbeanstalk:environment-name' && tag['Value'] == environment_name
+        end
       end.first
-      { db_name: instance_data["DBName"], host_name: instance_data["HostName"] }
+      { db_name: instance_data['DBName'], host_name: instance_data['HostName'] }
     end
 
-    def get_web_launch_security_group(web_environment_name, web_application_name)
-      raw_security_group_data, error, status = Open3.capture3("aws elasticbeanstalk describe-configuration-settings --environment-name #{web_environment_name} --application-name #{web_application_name} --output text --query \"ConfigurationSettings[0].OptionSettings[?Namespace=='aws:autoscaling:launchconfiguration' && OptionName=='SecurityGroups'].Value\"")
+    def get_launch_config_security_group(environment_name, application_name)
+      describe_configuration_settings_args = [
+        "--environment-name #{environment_name}",
+        "--application-name #{application_name}",
+        '--output text',
+        "--query \"ConfigurationSettings[0].OptionSettings[?Namespace=='aws:autoscaling:launchconfiguration' && OptionName=='SecurityGroups'].Value\""
+
+      ]
+
+      output, _error, _status = Open3.capture3("aws elasticbeanstalk describe-configuration-settings #{describe_configuration_settings_args.join(' ')}")
+      puts output
       raw_security_group_data
     end
   end
 
-  register "version", Version, aliases: ["v", "-v", "--version"]
-  register "create", Create, aliases: ["c"]
+  register 'version', Version, aliases: ['v', '-v', '--version']
+  register 'create', Create, aliases: ['c']
 end
 
 Dry::CLI.new(Commands).call

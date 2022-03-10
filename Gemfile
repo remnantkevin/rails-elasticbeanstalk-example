@@ -51,6 +51,13 @@ group :development do
 
   # Used to create and run local ruby scripts.
   gem 'dry-cli', '~> 0.7.0'
+
+  # Use rubocop for linting and formatting ruby code.
+  gem 'rubocop', require: false
+  gem 'rubocop-rails', require: false # A RuboCop extension focused on enforcing Rails best practices and coding conventions.
+
+  # Use solargraph for language server and intellisense in vscode.
+  gem 'solargraph'
 end
 
 group :test do

@@ -1,0 +1,28 @@
+require:
+  - rubocop-rails
+
+AllCops:
+  NewCops: enable
+
+Metrics/ClassLength:
+  Max: 500
+  CountAsOne: ["array", "hash", "heredoc"]
+
+Metrics/MethodLength:
+  Max: 200
+  CountAsOne: ["array", "hash", "heredoc"]
+
+Metrics/AbcSize:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Layout/MultilineHashKeyLineBreaks:
+  Enabled: true
+
+Layout/MultilineHashBraceLayout:
+  EnforcedStyle: new_line
+
+Layout/FirstHashElementLineBreak:
+  Enabled: true

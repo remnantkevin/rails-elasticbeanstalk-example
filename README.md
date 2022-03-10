@@ -34,6 +34,10 @@ To do this we configure the ... to use the `yum` package manager and the latest 
 
 # TODO
 
+- cleanup / comment out puts in launch script
+- use different ssm params for worker
+- sleep after creating worker in launch script until its ready
+
 - worker
 - images/files in S3
 - config in files
