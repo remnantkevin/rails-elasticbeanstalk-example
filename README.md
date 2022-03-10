@@ -59,5 +59,7 @@ A different `Procfile` is needed in the web application than in the worker appli
 - limitations of EB
 - limitations of the current setup
 - connect app to images/files on S3
-- security considerations
+- security considerations (e.g. worker is open to the public internet as it has an elastic IP)
 - launch script could be done using AWS Ruby SDK, CloudFormation, AWS CDK, etc.
+- try composing EB environments / linked / grouped environments
+- note the dependency between web and worker -- we needs to be created first, and worker needs to be terminated first
