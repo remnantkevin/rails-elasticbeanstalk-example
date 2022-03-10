@@ -14,7 +14,7 @@
 - Python `3.10.x`
 - AWS CLI `2.4.x`
 - Elastic Beanstalk CLI `3.20.x`
-- I use the `asdf` version manager, which is why there is a `.tool-versions` file
+- I use [`asdf`](https://github.com/asdf-vm/asdf) as a version manager, which is why there is a [`.tool-versions`](.tool-versions) file
 
 ### AWS
 
@@ -56,7 +56,7 @@ A different `Procfile` is needed in the web application than in the worker appli
 ## Using the example
 
 - Copy and modify the EB CLI [sample config file](.elasticbeanstalk/config.sample.yml), so that it can be used as a EB CLI config file.
-- See the [launch script](scripts/launch.rb) for details on how to deploy new web and worker applications.
+- See the [launch script](scripts/launch.rb) for details on how to deploy new web and worker applications. Run `./scripts/launch.rb create --help` for further command line help.
 - To deploy code to an existing environment, use `eb deploy` as usual, making sure to update the EB CLI config file (`.elasticbeanstalk/config.yml`) with the correct environment name and application name beforehand.
 
 ## TODO
@@ -70,3 +70,4 @@ A different `Procfile` is needed in the web application than in the worker appli
 - launch script could be done using AWS Ruby SDK, CloudFormation, AWS CDK, etc.
 - try composing EB environments / linked / grouped environments
 - note the dependency between web and worker -- we needs to be created first, and worker needs to be terminated first
+- use in CI/CD
