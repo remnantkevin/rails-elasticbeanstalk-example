@@ -17,7 +17,7 @@
 
 ### AWS
 
-- An IAM user with the relevant [Elastic Beanstalk permissions](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.managed-policies.html) and the `` Systems Manager policy.
+- An IAM user with the relevant [Elastic Beanstalk permissions](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.managed-policies.html) and the `AmazonSSMFullAccess` Systems Manager policy.
   - This user also needs to be set up as a local AWS CLI profile.
 - [An Elastic Beanstalk service role named `aws-elasticbeanstalk-service-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-servicerole.html).
 - [An EC2 service role named `aws-elasticbeanstalk-ec2-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html).
@@ -44,7 +44,7 @@ See the [`00_upgrade_to_postgresql13.sh`](.platform/hooks/prebuild/00_upgrade_to
 
 ### Procfile
 
-A different `Procfile` is needed in the web application than in the worker application. Both files exist in this repo ([`Procfile.web`](Profile.web) and [`Procfile.wroker`](Profile.worker)), but only one gets used in the specific application (see [`02_use_correct_procfile.sh`](.platform/hooks/prebuild/02_use_correct_procfile.sh) for more details).
+A different `Procfile` is needed in the web application than in the worker application. Both files exist in this repo ([`Procfile.web`](Procfile.web) and [`Procfile.wroker`](Procfile.worker)), but only one gets used in the specific application (see [`02_use_correct_procfile.sh`](.platform/hooks/prebuild/02_use_correct_procfile.sh) for more details).
 
 ## Using the example
 
