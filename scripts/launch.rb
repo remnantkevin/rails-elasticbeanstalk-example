@@ -32,7 +32,7 @@ module Commands
                          values: %i[production staging],
                          desc: 'Type of environment to create'
     option :profile, type: :string,
-                     default: 'eb-cli',
+                     required: true,
                      desc: 'Name of aws cli profile to use'
 
     def call(application:, environment:, profile:, **)
