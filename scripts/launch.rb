@@ -94,8 +94,8 @@ module Commands
 
       rds_hostname = get_rds_instance_hostname(web_environment_name, profile)
       security_group_name = get_launch_config_security_group(web_environment_name, web_application_name, profile)
-      puts rds_hostname
-      puts security_group_name
+      # puts rds_hostname
+      # puts security_group_name
 
       worker_option_overrides = [
         {
@@ -140,7 +140,7 @@ module Commands
         }
 
       ]
-      puts worker_option_overrides
+      # puts worker_option_overrides
 
       create_eb_environment(worker_application_name, worker_environment_name,
                             worker_application_unique_appversion_name, worker_application_unique_template_name,
@@ -156,10 +156,10 @@ module Commands
         "--label #{unique_appversion_name}",
         "--profile #{profile}"
       ]
-      puts appversion_args
+      # puts appversion_args
 
       output, _error, _status = Open3.capture3("eb appversion #{appversion_args.join(' ')}")
-      puts output
+      # puts output
     end
 
     def create_eb_configuration_template(application_name, unique_template_name, current_directory, profile, type)
@@ -170,12 +170,12 @@ module Commands
         "--option-settings \"file://#{current_directory}/.ebextensions/#{type}.config.json\"",
         "--profile #{profile}"
       ]
-      puts create_configuration_template_args
+      # puts create_configuration_template_args
 
       output, _error, _status = Open3.capture3(
         "aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}"
       )
-      puts output
+      # puts output
     end
 
     def create_eb_environment(application_name, environment_name, unique_appversion_name, unique_template_name,
@@ -188,13 +188,13 @@ module Commands
         "--option-settings '#{option_overrides.to_json}'",
         "--profile #{profile}"
       ]
-      puts create_environment_args
-      puts "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
+      # puts create_environment_args
+      # puts "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
 
       output, _error, _status = Open3.capture3(
         "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
       )
-      puts output
+      # puts output
     end
 
     def wait_for_environment_to_be_ready(environment_name, profile)
@@ -221,7 +221,7 @@ module Commands
       output, _error, _status = Open3.capture3(
         "aws elasticbeanstalk describe-environment-health #{describe_environment_health_args.join(' ')}"
       )
-      puts output
+      # puts output
 
       status = JSON.parse(output)['Status']
       puts status
