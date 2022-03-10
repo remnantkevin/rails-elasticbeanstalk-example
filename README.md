@@ -14,11 +14,18 @@
 - Python `3.10.x`
 - AWS CLI `2.4.x`
 - Elastic Beanstalk CLI `3.20.x`
+- I use the `asdf` version manager, which is why there is a `.tool-versions` file
 
 ### AWS
 
 - An IAM user with the relevant [Elastic Beanstalk permissions](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.managed-policies.html) and the `AmazonSSMFullAccess` Systems Manager policy.
   - This user also needs to be set up as a local AWS CLI profile.
+  - The [launch script](scripts/launch.rb) assumes there are string parameters in your AWS Parameter Store which are named as follows:
+    - `/[environment name]/[type of application]/[name]`
+    - e.g. `/production/web/RAILS_MASTER_KEY` and `/staging/worker/DBPassword`
+    - see the launch script for more details
+    - `[type of application]` possible values: `web`, `worker`
+    - `[name]` possible values: `RAILS_MASTER_KEY`, `DBUser`, `DBPassword`
 - [An Elastic Beanstalk service role named `aws-elasticbeanstalk-service-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-servicerole.html).
 - [An EC2 service role named `aws-elasticbeanstalk-ec2-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html).
 - [Set up an SSH key-value pair named `aws-eb`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-ssh.html).
@@ -59,7 +66,7 @@ A different `Procfile` is needed in the web application than in the worker appli
 - limitations of EB
 - limitations of the current setup
 - connect app to images/files on S3
-- security considerations (e.g. worker is open to the public internet as it has an elastic IP)
+- security considerations (e.g. worker is open to the public internet as it has an elastic IP, and plain strings are used for parameters in the Parameter Store)
 - launch script could be done using AWS Ruby SDK, CloudFormation, AWS CDK, etc.
 - try composing EB environments / linked / grouped environments
 - note the dependency between web and worker -- we needs to be created first, and worker needs to be terminated first
