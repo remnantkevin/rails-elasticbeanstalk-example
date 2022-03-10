@@ -72,6 +72,7 @@ module Commands
           Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY", profile)
         }
       ]
+      # puts web_option_overrides
 
       create_eb_environment(web_application_name, web_environment_name, web_application_unique_appversion_name,
                             web_application_unique_template_name, web_option_overrides, profile)
@@ -160,6 +161,7 @@ module Commands
 
       output, _error, _status = Open3.capture3("eb appversion #{appversion_args.join(' ')}")
       # puts output
+      puts "Created '#{application_name}' application version '#{unique_appversion_name}'"
     end
 
     def create_eb_configuration_template(application_name, unique_template_name, current_directory, profile, type)
@@ -176,6 +178,7 @@ module Commands
         "aws elasticbeanstalk create-configuration-template #{create_configuration_template_args.join(' ')}"
       )
       # puts output
+      puts "Created '#{application_name}' configuration template '#{unique_template_name}'"
     end
 
     def create_eb_environment(application_name, environment_name, unique_appversion_name, unique_template_name,
@@ -195,6 +198,7 @@ module Commands
         "aws elasticbeanstalk create-environment #{create_environment_args.join(' ')}"
       )
       # puts output
+      puts "Started creating '#{environment_name}' environment..."
     end
 
     def wait_for_environment_to_be_ready(environment_name, profile)
@@ -216,7 +220,7 @@ module Commands
         "--profile #{profile}"
       ]
 
-      puts 'Checking status...'
+      puts "Checking status of '#{environment_name}'..."
 
       output, _error, _status = Open3.capture3(
         "aws elasticbeanstalk describe-environment-health #{describe_environment_health_args.join(' ')}"
