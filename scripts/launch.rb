@@ -205,7 +205,7 @@ module Commands
       environment_status = get_environment_status(environment_name, profile)
 
       while environment_status != 'Ready'
-        puts 'Sleeping for 1 minute...'
+        puts 'Waiting 1 minute before checking status again...'
         sleep(60)
 
         environment_status = get_environment_status(environment_name, profile)
@@ -228,7 +228,7 @@ module Commands
       # puts output
 
       status = JSON.parse(output)['Status']
-      puts status
+      puts "Status: #{status}"
 
       status
     end
