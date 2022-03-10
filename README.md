@@ -44,13 +44,13 @@ See the [`00_upgrade_to_postgresql13.sh`](.platform/hooks/prebuild/00_upgrade_to
 
 ### Procfile
 
-A different `Procfile` is needed in the web application than in the worker application. Both files exist in this repo ([`Procfile.web`](Procfile.web) and [`Procfile.wroker`](Procfile.worker)), but only one gets used in the specific application (see [`02_use_correct_procfile.sh`](.platform/hooks/prebuild/02_use_correct_procfile.sh) for more details).
+A different `Procfile` is needed in the web application than in the worker application. Both files exist in this repo ([`Procfile.web`](Procfile.web) and [`Procfile.worker`](Procfile.worker)), but only one gets used in the specific application (see [`02_use_correct_procfile.sh`](.platform/hooks/prebuild/02_use_correct_procfile.sh) for more details).
 
 ## Using the example
 
-- Copy and modify the EB CLI [sample config file](.elasticbeanstalk/config.sample.yml).
-- See [the launch script](scripts/launch.rb) for details on how to deploy new web and worker applications.
-- Use `eb deploy` as usual, making sure to update the EB CLI config file (`.elasticbeanstalk/config.yml`) with the correct environment name and application name beforehand.
+- Copy and modify the EB CLI [sample config file](.elasticbeanstalk/config.sample.yml), so that it can be used as a EB CLI config file.
+- See the [launch script](scripts/launch.rb) for details on how to deploy new web and worker applications.
+- To deploy code to an existing environment, use `eb deploy` as usual, making sure to update the EB CLI config file (`.elasticbeanstalk/config.yml`) with the correct environment name and application name beforehand.
 
 ## TODO
 
