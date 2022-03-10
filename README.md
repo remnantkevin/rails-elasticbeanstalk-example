@@ -1,18 +1,29 @@
-# README
+# Ruby on Rails on Elastic Beanstalk Example
 
-# Explain setup
+## Setup
 
-asdf + .tool-versions
+### Required tools
 
-`gem update --system 3.3.7 --no-document`
+- Ruby `2.7.5-p203`
+- RubyGems `3.3.7`
+- Puma `5.6.2`
+- Bundler` 2.3.7`
+- Node `16.14.0`
+- Yarn `1.22.17`
+- PostgreSQL `13.3`
+- Python `3.10.x`
+- AWS CLI `2.4.x`
+- Elastic Beanstalk CLI `3.20.x`
 
-`gem install bundler -v 2.3.7`
+### AWS
 
-remove default bundler (e.g. 2.1.4)
+- An IAM user with the relevant [Elastic Beanstalk permissions](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/AWSHowTo.iam.managed-policies.html) and the `` Systems Manager policy.
+  - This user also needs to be set up as a local AWS CLI profile.
+- [An Elastic Beanstalk service role named `aws-elasticbeanstalk-service-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-servicerole.html).
+- [An EC2 service role named `aws-elasticbeanstalk-ec2-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-instanceprofile.html).
+- [Set up an SSH key-value pair named `aws-eb`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/eb3-ssh.html).
 
-- e.g. `rm -rf /Users/[username]/.asdf/installs/ruby/2.7.5/lib/ruby/gems/2.7.0/gems/bundler-2.1.4/`
-
-# Elastic Beanstalk platform
+## Elastic Beanstalk platform
 
 This project uses the [`Ruby 2.7 AL2 version 3.4.3`](https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platform-history-ruby.html) platform, which provides the following tools by default (as at `2022-03-05`):
 
@@ -21,19 +32,32 @@ This project uses the [`Ruby 2.7 AL2 version 3.4.3`](https://docs.aws.amazon.com
 - Puma `5.6.2`
 - Bundler` 2.3.7`
 - Node `16.14.0`
-- Yarn `1.22.17` (not available on command line)
 - Postgresql `9.2`
 
-# Database
+### Database
 
-In order to use a more up to date version of PostgreSQL (that is compatible with the `pg` gem), we need to update the version of the `postgresql` tool that is available to the app in the EB containers.
+In order to use a more up-to-date version of PostgreSQL (that is compatible with the `pg` gem), we need to update the version of the `postgresql` tool that is available to the app in the EB containers.
 
-To do this we configure the ... to use the `yum` package manager and the latest version of the `postgresql` tool available in the [`amazon-linux-extras` library](https://aws.amazon.com/premiumsupport/knowledge-center/ec2-install-extras-library-software/). The latest version (as at `2022-03-05`) is `13.3`.
+See the [`00_upgrade_to_postgresql13.sh`](.platform/hooks/prebuild/00_upgrade_to_postgresql13.sh) hook for how this update is done.
 
 `13.3` is also used when creating the PostgreSQL RDS instance that is coupled to the EB environment.
 
-# TODO
+### Procfile
 
-- cleanup / comment out puts in launch script
+A different `Procfile` is needed in the web application than in the worker application. Both files exist in this repo ([`Procfile.web`](Profile.web) and [`Procfile.wroker`](Profile.worker)), but only one gets used in the specific application (see [`02_use_correct_procfile.sh`](.platform/hooks/prebuild/02_use_correct_procfile.sh) for more details).
 
-- images/files in S3
+## Using the example
+
+- Copy and modify the EB CLI [sample config file](.elasticbeanstalk/config.sample.yml).
+- See [the launch script](scripts/launch.rb) for details on how to deploy new web and worker applications.
+- Use `eb deploy` as usual, making sure to update the EB CLI config file (`.elasticbeanstalk/config.yml`) with the correct environment name and application name beforehand.
+
+## TODO
+
+- more details on set up
+- more detailed explanantion of architecture and reasons why things were done the way they were
+- limitations of EB
+- limitations of the current setup
+- connect app to images/files on S3
+- security considerations
+- launch script could be done using AWS Ruby SDK, CloudFormation, AWS CDK, etc.
