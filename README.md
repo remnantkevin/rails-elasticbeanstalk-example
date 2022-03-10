@@ -24,6 +24,7 @@
     - `/[environment name]/[type of application]/[name]`
     - e.g. `/production/web/RAILS_MASTER_KEY` and `/staging/worker/DBPassword`
     - see the launch script for more details
+    - `[environment name]` possible values: `production`, `staging`
     - `[type of application]` possible values: `web`, `worker`
     - `[name]` possible values: `RAILS_MASTER_KEY`, `DBUser`, `DBPassword`
 - [An Elastic Beanstalk service role named `aws-elasticbeanstalk-service-role`](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-servicerole.html).
