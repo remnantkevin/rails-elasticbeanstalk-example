@@ -1,6 +1,4 @@
-# frozen_string_literal: true
-
-# !/usr/bin/env ruby
+#!/usr/bin/env ruby
 
 require 'bundler/setup'
 require 'dry/cli'
@@ -56,12 +54,12 @@ module Commands
         {
           Namespace: 'aws:rds:dbinstance',
           OptionName: 'DBUser',
-          Value: get_parameter_value("/#{environment}/web/DBUser")
+          Value: get_parameter_value("/#{environment}/web/DBUser", profile)
         },
         {
           Namespace: 'aws:rds:dbinstance',
           OptionName: 'DBPassword',
-          Value: get_parameter_value("/#{environment}/web/DBPassword")
+          Value: get_parameter_value("/#{environment}/web/DBPassword", profile)
         },
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
@@ -71,7 +69,7 @@ module Commands
         {
           Namespace: 'aws:elasticbeanstalk:application:environment',
           OptionName: 'RAILS_MASTER_KEY',
-          Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY")
+          Value: get_parameter_value("/#{environment}/web/RAILS_MASTER_KEY", profile)
         }
       ]
 
